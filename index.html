@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mustela 防曬產品教育訓練測驗</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --yellow:#F5C842; --accent:#E8A020; --dark:#1A1A2E; --white:#FFFFFF;
+  --correct:#2ECC71; --wrong:#E74C3C;
+  --card-bg:rgba(255,255,255,0.05); --card-border:rgba(255,255,255,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--dark);min-height:100vh;color:var(--white);overflow-x:hidden;}
+body::before{content:'';position:fixed;top:-50%;right:-20%;width:700px;height:700px;background:radial-gradient(circle,rgba(245,200,66,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;bottom:-30%;left:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(232,160,32,.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+.container{max-width:820px;margin:0 auto;padding:20px;position:relative;z-index:1;}
+.screen{display:none;}
+.screen.active{display:flex;flex-direction:column;animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+.btn-primary{background:linear-gradient(135deg,var(--yellow),var(--accent));color:var(--dark);border:none;border-radius:50px;padding:15px 44px;font-size:16px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .3s;box-shadow:0 8px 28px rgba(245,200,66,.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(245,200,66,.42);}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-outline{background:transparent;color:var(--yellow);border:1.5px solid var(--yellow);border-radius:50px;padding:13px 36px;font-size:15px;font-weight:600;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .3s;}
+.btn-outline:hover{background:var(--yellow);color:var(--dark);}
+
+input[type=text],input[type=email],input[type=password],input[type=number]{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 18px;font-size:15px;color:var(--white);font-family:'Noto Sans TC',sans-serif;outline:none;transition:all .3s;}
+input:focus{border-color:var(--yellow);background:rgba(245,200,66,.06);}
+input::placeholder{color:rgba(255,255,255,.35);}
+label{font-size:13px;color:rgba(255,255,255,.55);margin-bottom:6px;display:block;letter-spacing:.5px;}
+.form-group{margin-bottom:18px;}
+
+/* ── 開始畫面 ── */
+#start-screen{min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
+.brand-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,200,66,.12);border:1px solid rgba(245,200,66,.28);border-radius:50px;padding:7px 20px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-bottom:28px;}
+.main-title{font-family:'DM Serif Display',serif;font-size:clamp(34px,6vw,56px);line-height:1.1;margin-bottom:10px;background:linear-gradient(135deg,#FFF 0%,var(--yellow) 60%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sub-title{font-size:17px;color:rgba(255,255,255,.55);margin-bottom:36px;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;width:100%;max-width:460px;}
+.info-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:18px 12px;text-align:center;}
+.info-card .icon{font-size:26px;margin-bottom:6px;}
+.info-card .val{font-size:20px;font-weight:700;color:var(--yellow);line-height:1;margin-bottom:3px;}
+.info-card .lbl{font-size:11px;color:rgba(255,255,255,.42);}
+.email-form{width:100%;max-width:420px;margin-bottom:24px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:24px 28px;}
+.email-form h3{font-size:15px;margin-bottom:16px;color:rgba(255,255,255,.8);}
+.err-msg{font-size:12px;color:var(--wrong);margin-top:6px;display:none;}
+.warn-msg{font-size:12px;color:var(--yellow);margin-top:6px;display:none;}
+
+/* ── 測驗畫面 ── */
+#quiz-screen{min-height:100vh;}
+#quiz-header{display:flex;justify-content:space-between;align-items:center;padding:20px 0 14px;position:sticky;top:0;background:linear-gradient(180deg,var(--dark) 82%,transparent);z-index:10;}
+.quiz-logo{font-family:'DM Serif Display',serif;font-size:20px;color:var(--yellow);}
+.q-info{display:flex;align-items:center;gap:14px;}
+.q-counter{font-size:14px;color:rgba(255,255,255,.5);}
+.q-counter span{font-size:17px;font-weight:700;color:var(--white);}
+.score-badge{background:rgba(245,200,66,.13);border:1px solid rgba(245,200,66,.28);border-radius:20px;padding:5px 14px;font-size:13px;color:var(--yellow);font-weight:600;}
+.progress-wrap{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:28px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--accent));border-radius:2px;transition:width .5s ease;}
+.timer-bar{display:none;text-align:right;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px;}
+
+.q-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:22px;padding:28px;margin-bottom:20px;}
+.q-meta{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.tag{border-radius:20px;padding:3px 12px;font-size:11px;font-weight:600;letter-spacing:.5px;}
+.tag-topic{background:rgba(245,200,66,.1);color:var(--yellow);border:1px solid rgba(245,200,66,.22);}
+.tag-基礎{background:rgba(46,204,113,.1);color:#2ECC71;border:1px solid rgba(46,204,113,.22);}
+.tag-進階{background:rgba(52,152,219,.1);color:#3498DB;border:1px solid rgba(52,152,219,.22);}
+.tag-深入{background:rgba(155,89,182,.1);color:#9B59B6;border:1px solid rgba(155,89,182,.22);}
+.q-text{font-size:17px;line-height:1.75;font-weight:500;}
+
+.options{display:grid;gap:10px;margin-bottom:20px;}
+.opt-btn{display:flex;align-items:flex-start;gap:14px;background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:14px;padding:14px 18px;cursor:pointer;transition:all .22s;text-align:left;color:var(--white);font-family:'Noto Sans TC',sans-serif;font-size:14px;line-height:1.6;width:100%;}
+.opt-btn:hover:not(:disabled){background:rgba(245,200,66,.07);border-color:rgba(245,200,66,.38);transform:translateX(3px);}
+.opt-letter{min-width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;margin-top:1px;}
+.opt-btn.correct{background:rgba(46,204,113,.1);border-color:var(--correct);}
+.opt-btn.correct .opt-letter{background:var(--correct);color:#fff;}
+.opt-btn.wrong{background:rgba(231,76,60,.1);border-color:var(--wrong);}
+.opt-btn.wrong .opt-letter{background:var(--wrong);color:#fff;}
+.opt-btn:disabled{cursor:default;transform:none !important;}
+
+.expl-box{display:none;background:rgba(255,255,255,.03);border-left:3px solid var(--yellow);border-radius:0 14px 14px 0;padding:18px 22px;margin-bottom:20px;animation:slideDown .3s ease;}
+.expl-box.show{display:block;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.expl-hd{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--yellow);margin-bottom:8px;font-weight:600;}
+.expl-txt{font-size:15px;line-height:1.85;color:rgba(255,255,255,.75);}
+
+.btn-row{display:flex;justify-content:flex-end;padding-bottom:30px;}
+.btn-next{background:linear-gradient(135deg,var(--yellow),var(--accent));color:var(--dark);border:none;border-radius:50px;padding:13px 32px;font-size:14px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .3s;display:none;align-items:center;gap:7px;}
+.btn-next.show{display:inline-flex;}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,200,66,.35);}
+
+/* ── 送出中 ── */
+#submit-screen{min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
+.spinner{width:60px;height:60px;border:4px solid rgba(245,200,66,.2);border-top-color:var(--yellow);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 24px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── 結果畫面 ── */
+#result-screen{min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
+.result-emoji{font-size:68px;margin-bottom:18px;animation:bounce .8s ease;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+.result-title{font-family:'DM Serif Display',serif;font-size:clamp(26px,5vw,40px);margin-bottom:6px;background:linear-gradient(135deg,#FFF,var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:36px;}
+
+.score-wrap{position:relative;width:190px;height:190px;margin:0 auto 36px;}
+.score-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.arc-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:8;}
+.arc-fill{fill:none;stroke:url(#sg);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.6s cubic-bezier(.25,1,.5,1);}
+.score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-size:46px;font-weight:900;color:var(--yellow);line-height:1;}
+.score-denom{font-size:14px;color:rgba(255,255,255,.38);margin-top:3px;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:460px;margin-bottom:28px;}
+.stat-box{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:16px 10px;}
+.stat-val{font-size:26px;font-weight:700;line-height:1;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:rgba(255,255,255,.42);}
+.stat-c .stat-val{color:var(--correct);}
+.stat-w .stat-val{color:var(--wrong);}
+.stat-s .stat-val{color:var(--yellow);}
+.result-msg{background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.18);border-radius:14px;padding:18px 24px;margin-bottom:28px;max-width:460px;font-size:14px;line-height:1.75;color:rgba(255,255,255,.78);}
+.btn-group{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+
+/* ── 後台登入 ── */
+#admin-login{min-height:100vh;align-items:center;justify-content:center;padding:40px 20px;}
+.admin-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:22px;padding:36px 32px;width:100%;max-width:420px;}
+.admin-card h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--yellow);margin-bottom:6px;}
+.admin-card p{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:28px;}
+
+/* ── 後台 ── */
+#admin-screen{min-height:100vh;padding:20px;}
+.admin-header{display:flex;justify-content:space-between;align-items:center;padding:20px 0 24px;border-bottom:1px solid var(--card-border);margin-bottom:28px;}
+.admin-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--yellow);}
+.admin-sub{font-size:13px;color:rgba(255,255,255,.4);margin-top:3px;}
+.config-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:18px;padding:24px;margin-bottom:20px;}
+.config-card h3{font-size:15px;color:rgba(255,255,255,.8);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--card-border);}
+.config-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.config-item label{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:5px;}
+.config-item input[type=number],.config-item input[type=password]{border-radius:10px;padding:10px 14px;font-size:14px;}
+.save-btn{background:linear-gradient(135deg,var(--yellow),var(--accent));color:var(--dark);border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .3s;margin-top:14px;}
+.save-btn:hover{opacity:.9;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.summary-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:18px 16px;text-align:center;}
+.summary-val{font-size:28px;font-weight:700;color:var(--yellow);line-height:1;}
+.summary-lbl{font-size:11px;color:rgba(255,255,255,.42);margin-top:4px;}
+
+.gs-link-card{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.gs-link-card p{font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;}
+.gs-link-btn{background:var(--yellow);color:var(--dark);border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;font-family:'Noto Sans TC',sans-serif;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;}
+
+.table-wrap{background:var(--card-bg);border:1px solid var(--card-border);border-radius:18px;overflow:hidden;margin-bottom:20px;}
+.table-header{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--card-border);}
+.table-header h3{font-size:15px;color:rgba(255,255,255,.8);}
+.export-btn{background:rgba(245,200,66,.1);color:var(--yellow);border:1px solid rgba(245,200,66,.25);border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;font-family:'Noto Sans TC',sans-serif;cursor:pointer;transition:all .3s;}
+.export-btn:hover{background:rgba(245,200,66,.2);}
+
+table{width:100%;border-collapse:collapse;}
+th{background:rgba(255,255,255,.04);padding:12px 16px;font-size:11px;font-weight:600;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.8px;text-align:left;border-bottom:1px solid var(--card-border);}
+td{padding:13px 16px;font-size:13px;color:rgba(255,255,255,.78);border-bottom:1px solid rgba(255,255,255,.04);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.pass-y{display:inline-block;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;background:rgba(46,204,113,.15);color:var(--correct);}
+.pass-n{display:inline-block;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;background:rgba(231,76,60,.15);color:var(--wrong);}
+.empty-msg{text-align:center;padding:40px;color:rgba(255,255,255,.3);font-size:14px;}
+
+.logout-btn{background:rgba(231,76,60,.1);color:#E74C3C;border:1px solid rgba(231,76,60,.25);border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;font-family:'Noto Sans TC',sans-serif;cursor:pointer;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#1E2340;border:1px solid var(--card-border);border-radius:20px;padding:32px;width:100%;max-width:400px;text-align:center;}
+.modal-box h3{font-size:20px;margin-bottom:10px;}
+.modal-box p{font-size:14px;color:rgba(255,255,255,.6);margin-bottom:24px;line-height:1.7;}
+
+@media(max-width:600px){
+  .info-grid{gap:8px;}
+  .stats-grid{gap:8px;}
+  .config-grid{grid-template-columns:1fr;}
+  .summary-grid{grid-template-columns:repeat(2,1fr);}
+  td,th{padding:10px 12px;}
+  .gs-link-card{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ 開始畫面 ══ -->
+<div id="start-screen" class="screen active">
+  <div class="brand-badge">☀️ Mustela Sun Care</div>
+  <h1 class="main-title">防曬產品<br>教育訓練測驗</h1>
+  <p class="sub-title">測驗您對 Mustela 防曬系列的專業知識</p>
+  <div class="info-grid">
+    <div class="info-card"><div class="icon">📝</div><div class="val">25</div><div class="lbl">題目數量</div></div>
+    <div class="info-card"><div class="icon">⏱️</div><div class="val" id="show-time">無限制</div><div class="lbl">時間限制</div></div>
+    <div class="info-card"><div class="icon">🎯</div><div class="val" id="show-pass">80</div><div class="lbl">及格分數</div></div>
+  </div>
+  <div class="email-form">
+    <h3>請輸入您的 Email 開始測驗</h3>
+    <div class="form-group">
+      <label>EMAIL</label>
+      <input type="email" id="user-email" placeholder="your@email.com" oninput="onEmailInput()">
+      <div class="err-msg" id="email-err">請輸入有效的 Email 格式</div>
+      <div class="warn-msg" id="attempt-warn"></div>
+    </div>
+  </div>
+  <button class="btn-primary" id="btn-begin" onclick="beginQuiz()" disabled>開始測驗 →</button>
+  <div style="margin-top:20px">
+    <button onclick="goAdmin()" style="background:none;border:none;color:rgba(255,255,255,.2);font-size:12px;cursor:pointer;letter-spacing:1px;">管理後台</button>
+  </div>
+</div>
+
+<!-- ══ 測驗畫面 ══ -->
+<div id="quiz-screen" class="screen">
+  <div class="container">
+    <div id="quiz-header">
+      <div class="quiz-logo">Mustela</div>
+      <div class="q-info">
+        <div class="q-counter">第 <span id="cur-q">1</span> / 25 題</div>
+        <div class="score-badge" id="live-score">得分：0</div>
+      </div>
+    </div>
+    <div class="timer-bar" id="timer-bar">⏱️ 剩餘時間：<span id="timer-display" style="color:var(--yellow);font-weight:700;">--:--</span></div>
+    <div class="progress-wrap"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="q-card">
+      <div class="q-meta" id="q-meta"></div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div class="options" id="opts"></div>
+    <div class="expl-box" id="expl-box">
+      <div class="expl-hd">📖 解析</div>
+      <div class="expl-txt" id="expl-txt"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-next" id="btn-next" onclick="nextQ()">
+        <span id="btn-next-txt">下一題</span> →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 送出中 ══ -->
+<div id="submit-screen" class="screen">
+  <div class="spinner"></div>
+  <p style="color:rgba(255,255,255,.6);font-size:15px;margin-top:8px;">正在儲存測驗結果⋯</p>
+</div>
+
+<!-- ══ 結果畫面 ══ -->
+<div id="result-screen" class="screen">
+  <div id="res-emoji" class="result-emoji">🎉</div>
+  <h2 class="result-title" id="res-title">測驗完成！</h2>
+  <p class="result-sub" id="res-sub"></p>
+  <div class="score-wrap">
+    <svg viewBox="0 0 190 190" width="190" height="190">
+      <defs>
+        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#F5C842"/>
+          <stop offset="100%" style="stop-color:#E8A020"/>
+        </linearGradient>
+      </defs>
+      <circle class="arc-bg" cx="95" cy="95" r="83"/>
+      <circle class="arc-fill" id="arc" cx="95" cy="95" r="83" stroke-dasharray="521" stroke-dashoffset="521"/>
+    </svg>
+    <div class="score-inner">
+      <div class="score-num" id="res-score">0</div>
+      <div class="score-denom">/ 100 分</div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-box stat-c"><div class="stat-val" id="res-correct">0</div><div class="stat-lbl">✅ 答對</div></div>
+    <div class="stat-box stat-w"><div class="stat-val" id="res-wrong">0</div><div class="stat-lbl">❌ 答錯</div></div>
+    <div class="stat-box stat-s"><div class="stat-val" id="res-pct">0%</div><div class="stat-lbl">🎯 正確率</div></div>
+  </div>
+  <div class="result-msg" id="res-msg"></div>
+  <div class="btn-group">
+    <button class="btn-primary" onclick="tryAgain()">🔄 再測一次</button>
+    <button class="btn-outline" onclick="backHome()">← 返回首頁</button>
+  </div>
+</div>
+
+<!-- ══ 後台登入 ══ -->
+<div id="admin-login" class="screen">
+  <div class="admin-card">
+    <h2>管理後台</h2>
+    <p>請輸入管理員密碼登入</p>
+    <div class="form-group">
+      <label>管理員密碼</label>
+      <input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAdmin()">
+      <div class="err-msg" id="pw-err">密碼錯誤，請再試一次</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button class="btn-primary" style="flex:1;padding:13px" onclick="checkAdmin()">登入</button>
+      <button class="btn-outline" onclick="backHome()">返回</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 後台管理 ══ -->
+<div id="admin-screen" class="screen">
+  <div class="container" style="max-width:1000px">
+    <div class="admin-header">
+      <div>
+        <div class="admin-title">⚙️ 測驗管理後台</div>
+        <div class="admin-sub">Mustela 防曬教育訓練系統</div>
+      </div>
+      <button class="logout-btn" onclick="adminLogout()">登出</button>
+    </div>
+
+    <!-- Google Sheets 連結 -->
+    <div class="gs-link-card">
+      <p>📊 所有測驗成績都已自動儲存至 <strong style="color:var(--yellow)">Google 試算表</strong>，可在那裡查看完整資料、篩選、匯出。</p>
+      <a class="gs-link-btn" href="https://sheets.google.com" target="_blank">開啟 Google 試算表 →</a>
+    </div>
+
+    <!-- 設定 -->
+    <div class="config-card">
+      <h3>⚙️ 測驗設定</h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>及格分數（0-100）</label>
+          <input type="number" id="cfg-pass" min="0" max="100" value="80">
+        </div>
+        <div class="config-item">
+          <label>測驗次數上限（0 = 無限次）</label>
+          <input type="number" id="cfg-attempts" min="0" value="0">
+        </div>
+        <div class="config-item">
+          <label>時間限制（分鐘，0 = 無限制）</label>
+          <input type="number" id="cfg-time" min="0" value="0">
+        </div>
+        <div class="config-item">
+          <label>更改管理員密碼（留空不變）</label>
+          <input type="password" id="cfg-pw" placeholder="新密碼">
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveConfig()">💾 儲存設定</button>
+      <span id="save-ok" style="font-size:13px;color:var(--correct);margin-left:12px;display:none;">✓ 已儲存！</span>
+    </div>
+
+    <!-- 統計 -->
+    <div class="summary-grid">
+      <div class="summary-card"><div class="summary-val" id="sum-total">0</div><div class="summary-lbl">總測驗次數</div></div>
+      <div class="summary-card"><div class="summary-val" id="sum-people">0</div><div class="summary-lbl">受測人數</div></div>
+      <div class="summary-card"><div class="summary-val" id="sum-pass">0</div><div class="summary-lbl">通過人次</div></div>
+      <div class="summary-card"><div class="summary-val" id="sum-avg">-</div><div class="summary-lbl">平均分數</div></div>
+    </div>
+
+    <!-- 明細表 -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <h3>📋 受測者總覽</h3>
+        <button class="export-btn" onclick="exportCSV()">⬇️ 匯出 CSV</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Email</th><th>測驗次數</th><th>最近測驗時間</th>
+            <th>最高分</th><th>最低分</th><th>最近分數</th><th>結果</th>
+          </tr></thead>
+          <tbody id="summary-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 完整記錄 -->
+    <div class="table-wrap">
+      <div class="table-header"><h3>📜 完整測驗記錄</h3></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Email</th><th>測驗時間</th><th>分數</th>
+            <th>答對/總題</th><th>耗時</th><th>結果</th>
+          </tr></thead>
+          <tbody id="all-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 次數限制 Modal ══ -->
+<div class="modal-overlay" id="limit-modal">
+  <div class="modal-box">
+    <div style="font-size:52px;margin-bottom:12px;">🚫</div>
+    <h3>測驗次數已達上限</h3>
+    <p id="limit-msg"></p>
+    <button class="btn-outline" onclick="document.getElementById('limit-modal').classList.remove('show')">確認</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// 設定
+// ════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzORjA_v0SfljX68K3w0j7cO4FZm-f9o6VDJ8WAmKIHpUMDcId-eR8mYwU70SNWDQZPwQ/exec';
+const CFG_KEY  = 'mustela_cfg';
+const REC_KEY  = 'mustela_rec';
+const ADM_KEY  = 'mustela_adm';
+
+function loadCfg(){
+  const d={passScore:80,maxAttempts:0,timeLimit:0,adminPw:'mustela2024'};
+  try{return Object.assign(d,JSON.parse(localStorage.getItem(CFG_KEY)||'{}'));}catch{return d;}
+}
+function saveCfg(c){localStorage.setItem(CFG_KEY,JSON.stringify(c));}
+function loadRec(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'[]');}catch{return[];}}
+function addRec(r){const a=loadRec();a.push(r);localStorage.setItem(REC_KEY,JSON.stringify(a));}
+
+// ════════════════════════════════
+// 題庫（動態注入）
+// ════════════════════════════════
+const ALL_QUESTIONS = [{"id": 1, "topic": "防曬基礎知識", "level": "基礎", "question": "如果一個人在大太陽下 10 分鐘就會曬傷，使用 SPF 30 的防曬產品後，理論上可以保護多久？", "options": {"A": "30 分鐘", "B": "150 分鐘", "C": "300 分鐘", "D": "500 分鐘"}, "answer": "C", "explanation": "SPF（Sun Protection Factor，防曬係數）的計算方式為：原本曬傷時間 × SPF 值。本題中：10 分鐘 × 30 = 300 分鐘（5 小時）。這是理論值，實際使用時仍需每 2 小時補擦，並在游泳、大量流汗後重新塗抹。Mustela SPF 50+ 提供更長效的防護，但仍建議定時補擦以確保最佳效果。", "points": 4}, {"id": 2, "topic": "防曬基礎知識", "level": "基礎", "question": "太陽光譜當中，UVA、UVB、UVC 哪一個穿透力最強？", "options": {"A": "UVA", "B": "UVB", "C": "UVC", "D": "三者穿透力相同"}, "answer": "A", "explanation": "UVA 的穿透力最強，可以穿透雲層、玻璃，甚至到達皮膚真皮層，是造成皮膚老化的主要原因。UVB 穿透力較弱，主要停留在表皮層，造成曬傷。UVC 穿透力最弱，幸運的是，UVC 幾乎被大氣臭氧層完全吸收，不會到達地表。因此即使在室內、陰天，或是開車時，UVA 仍然會對皮膚造成傷害，這就是為什麼需要每天使用防曬的原因。Mustela 提供完整的 UVA/UVB 廣譜防護。", "points": 4}, {"id": 3, "topic": "防曬基礎知識", "level": "基礎", "question": "以下哪一項主要是由 UVA 造成的皮膚傷害？", "options": {"A": "曬傷（紅腫）", "B": "皮膚老化和曬黑", "C": "維生素 D 合成", "D": "立即性的疼痛感"}, "answer": "B", "explanation": "UVA（長波紫外線）的主要影響包括：(1) 皮膚老化：破壞真皮層的膠原蛋白（Collagen）和彈性纖維（Elastin）；(2) 曬黑：刺激黑色素（Melanin）生成；(3) 皮膚癌風險：與黑色素瘤（Melanoma）相關。UVA 的特性是「短期內影響不明顯，但長期累積傷害嚴重」，因此常被忽略。", "points": 4}, {"id": 4, "topic": "防曬基礎知識", "level": "基礎", "question": "曬傷（皮膚紅腫、疼痛）主要是由哪一種紫外線造成的？", "options": {"A": "UVA", "B": "UVB", "C": "UVC", "D": "紅外線（IR, Infrared）"}, "answer": "B", "explanation": "UVB（中波紫外線）是造成曬傷的主要原因，其影響包括：(1) 曬傷：皮膚紅腫、發熱、疼痛；(2) 黑色素合成：促進黑色素（Melanin）產生；(3) 皮膚癌：是皮膚癌的重要成因之一；(4) 維生素 D 合成：唯一的好處。SPF 值主要就是測量對 UVB 的防護能力。Mustela 提供 SPF 50+ 的高效防護，讓全家人安心享受陽光。", "points": 4}, {"id": 5, "topic": "防曬基礎知識", "level": "進階", "question": "UVA 主要透過產生什麼物質來傷害皮膚細胞的 DNA、蛋白質和脂質？", "options": {"A": "黑色素（Melanin）", "B": "自由基（Free Radicals）", "C": "維生素 D", "D": "膠原蛋白（Collagen）"}, "answer": "B", "explanation": "UVA 主要透過產生自由基（Free Radicals）來造成皮膚傷害。自由基的傷害機制：(1) 自由基是不穩定的分子；(2) 會從健康細胞搶奪電子；(3) 造成連鎖反應，引發氧化壓力（Oxidative Stress）；(4) 損害 DNA、蛋白質、細胞膜脂質；(5) 破壞膠原蛋白和彈性纖維。結果導致皮膚老化、皺紋、鬆弛、暗沉。這就是為什麼 Mustela 防曬配方中添加 Avocado Perseose®（酪梨複合活源醣）專利成分，防曬同時兼具保濕、提升肌膚屏障，提供雙重防護。", "points": 4}, {"id": 6, "topic": "防曬基礎知識", "level": "基礎", "question": "根據歐盟法規，要標示「UVA 圓圈符號」，產品的 UVA 防護因子（UVA-PF）必須至少達到 SPF 值的多少比例？", "options": {"A": "1/5", "B": "1/4", "C": "1/3", "D": "1/2"}, "answer": "C", "explanation": "歐盟規定，要合法標示「UVA 圓圈符號」，產品的 UVA 防護因子（UVA-PF 或 PPD）必須至少達到 SPF 值的 1/3。例如：SPF 30 產品 → UVA-PF 至少 ≥ 10；SPF 50 產品 → UVA-PF 至少 ≥ 16-17。這是最低門檻（minimum requirement），優質品牌通常會超過這個標準，提供更均衡的 UVA/UVB 防護。Mustela 所有防曬產品都符合並超越歐盟 UVA 防護標準，確保提供最完整的廣譜防護。", "points": 4}, {"id": 7, "topic": "防曬基礎知識", "level": "基礎", "question": "根據費茲派翠克量表 (Fitzpatrick scale)，第一型光分型 (Phototype I) 的特徵是什麼？", "options": {"A": "淺褐色皮膚，容易曬黑", "B": "極白皙皮膚，總是曬傷，不會曬黑", "C": "白皙皮膚，容易曬傷，曬黑效果差", "D": "深褐色皮膚，極少曬傷"}, "answer": "B", "explanation": "費茲派翠克量表 (Fitzpatrick scale) 第一型光分型 (Phototype I) 的特徵包括：(1) 極白皙皮膚；(2) 金髮或紅髮；(3) 經常有雀斑；(4) 總是曬傷，不會曬黑，總是發紅。這類型皮膚對紫外線最敏感，黑色素（Melanin）生成能力最弱，需要最高等級的防曬保護（SPF 50+）。Mustela SPF50+ 防曬系列適合所有膚質，包括最敏感的第一型皮膚，提供極高耐受性的安全防護。", "points": 4}, {"id": 8, "topic": "防曬基礎知識", "level": "進階", "question": "「陰天不需要擦防曬」這個說法是否正確？", "options": {"A": "正確，陰天沒有太陽就不需要防曬", "B": "錯誤，UVA 可穿透雲層，陰天仍需防曬", "C": "正確，只有夏天才需要防曬", "D": "錯誤，但只需要擦 SPF15 就夠了"}, "answer": "B", "explanation": "這是常見的防曬迷思！事實：(1) UVA 穿透力極強，可以穿透雲層、霧霾；(2) 即使陰天，仍有 80% 的紫外線到達地表；(3) UVA 全年365天都存在，不分陰晴；(4) WHO（世界衛生組織）建議：UV指數 ≥3 就需防曬（即便在陰天）。結論：陰天、冬天、室內（靠窗）都需要防曬。Mustela SPF50+ 提供每日全方位防護，適合全年使用，讓肌膚時刻受到保護。", "points": 4}, {"id": 9, "topic": "防曬基礎知識", "level": "進階", "question": "「塗了 SPF50+ 防曬就完全不會曬黑」這個說法是否正確？", "options": {"A": "正確，SPF50+ 可以完全阻擋紫外線", "B": "錯誤，防曬霜無法 100% 阻擋 UVA，長時間曝曬仍會曬黑", "C": "正確，只要塗夠厚就不會曬黑", "D": "錯誤，防曬霜只能防曬傷，無法防曬黑"}, "answer": "B", "explanation": "這是最常見的迷思之一！事實：(1) 目前沒有任何防曬能 100% 阻擋 UVA；(2) SPF50+ PA++++ 已是最高等級，但仍有 3-6% UVA 會穿透；(3) 這些少量 UVA 累積下來，長時間曝曬仍會刺激黑色素生成；(4) 曬黑是皮膚面對 UVA 的正常防禦反應。完整防護建議：防曬乳 + 物理遮蔽（帽子、衣物、遮陽傘）+ 避開 10AM-4PM。Mustela 提供市場最高規格的 UVA/UVB 防護，但仍建議搭配物理防曬，達到最佳效果。", "points": 4}, {"id": 10, "topic": "防曬基礎知識", "level": "進階", "question": "根據費茲派翠克量表 (Fitzpatrick scale) 的光分型和曝曬程度，第一型（極白皙）皮膚的人在海邊度假，應該使用什麼等級的防曬？", "options": {"A": "SPF 15 即可", "B": "SPF 30 中等防護", "C": "SPF 50+ 極高防護", "D": "不需要防曬，穿長袖即可"}, "answer": "C", "explanation": "根據費茲派翠克量表 (Fitzpatrick scale) 與曝曬程度對照：第一型皮膚（極白皙、總是曬傷、不會曬黑）在海邊（高度曝曬：強烈陽光 + 沙灘反射15% + 海水反射25%）必須使用極高防護 SPF 50+。防曬等級建議：中度曝曬（公園、週末活動）→ 第一型用SPF50+，第三型可用SPF30；高度曝曬（海邊、長時間戶外）→ 第一型用SPF50+，第三型用SPF50；強烈曝曬（熱帶、高山）→ 所有膚質都用SPF50+。Mustela SPF50+ 適合所有膚質，特別是第一、二型敏感肌膚。", "points": 4}, {"id": 11, "topic": "防曬基礎知識", "level": "進階", "question": "客戶問：「我看網路上說防曬會阻礙維生素 D 合成，那還要擦防曬嗎？」正確的專業回答是？", "options": {"A": "對，所以不要擦防曬，讓皮膚自然曬太陽", "B": "日常防曬不會顯著影響維生素 D 合成，且可透過飲食補充；皮膚癌風險遠大於維生素 D 不足風險", "C": "只有冬天才需要擔心維生素 D", "D": "防曬和維生素 D 無關"}, "answer": "B", "explanation": "科學事實：(1) 維生素D合成需要UVB照射皮膚，理論上防曬會減少UVB；(2)現實情況： 大多數人塗抹防曬乳的量並不夠，或是漏掉某些部位（如手臂內側、背部），因此在日常生活中，即便擦了防曬，通常還是能合成少量的維生素D。\n皮膚科醫師通常不建議為了補充維生素D而完全不防曬，原因有二：(1)皮膚老化與病變： 過度曝曬會導致光老化（變黑、長斑、皺紋）以及增加皮膚癌風險。(2)邊際效應： 維生素D的合成有「飽和點」。當皮膚暴露在陽光下一段時間後，合成速度會減慢甚至停止，多曬只會增加受傷風險，不會增加維生素D產量。\n\n可以建議參考以下三個方式，在不犧牲膚況的前提下補足維生素D：\n‧「局部、短時」曝曬： 選在陽光不那麼毒辣的時段（如上午 10 點前或下午 4 點後），讓未塗抹防曬的手臂或腿部直接曝曬約 10-15 分鐘，每週 2-3 次。這對於多數人來說已足夠合成每日所需的維生素D。\n‧避開臉部防曬區： 臉部皮膚較薄且容易長斑，建議臉部維持完整的防曬，改由身體大面積部位（如背部、腿部）進行短暫曝曬。維生素 D 的合成量與曝曬面積成正比，曬 10 分鐘的手臂，產生的維生素 D 遠比曬 10 分鐘的臉部多。\n‧飲食與營養補充：透過口服補充（如維生素 D3 滴劑或錠劑），可以避開所有紫外線傷害，且能透過血檢精準追蹤濃度。這能在完全阻斷紫外線傷害的同時，精準控制體內的維生素D濃度。\n", "points": 4}, {"id": 12, "topic": "防曬基礎知識", "level": "基礎", "question": "根據費茲派翠克量表 (Fitzpatrick scale)，皮膚光分型共分為幾種？", "options": {"A": "4 種", "B": "6 種", "C": "8 種", "D": "10 種"}, "answer": "B", "explanation": "根據費茲派翠克量表 (Fitzpatrick scale) 的分類，皮膚光分型共有 6 種，稱為光分型 (phototype)，範圍從第一型（最淺、最易曬傷）到第六型（最深、極少曬傷）。這個分類系統幫助評估皮膚對紫外線的反應，以決定適當的防曬等級。雖然深色皮膚有較好的天然防護，但所有光分型都需要防曬保護。Mustela 防曬系列適合所有 6 種光分型，從第一型的極敏感肌膚到第六型都能安全使用。", "points": 4}, {"id": 13, "topic": "兒童與孕婦防曬", "level": "基礎", "question": "嬰兒皮膚與成人皮膚相比，以下何者正確？", "options": {"A": "嬰兒皮膚的水分流失率較慢", "B": "嬰兒皮膚的黑色素（Melanin）較多", "C": "嬰兒皮膚的天然保濕因子（NMF）較少", "D": "嬰兒皮膚的角質細胞（Corneocytes）較大"}, "answer": "C", "explanation": "嬰兒與成人皮膚的主要差異：(1) 水分流失率：嬰兒較快（選項A錯誤）；(2) 天然保濕因子（NMF, Natural Moisturizing Factors）：嬰兒較少（選項C正確）；(3) 黑色素（Melanin）：嬰兒較少，防護力較弱（選項B錯誤）；(4) 角質細胞（Corneocytes）：嬰兒較小（選項D錯誤）。這些差異使得嬰兒皮膚更脆弱、更需要額外保護。Mustela 防曬系列專為嬰幼兒設計，配方溫和，出生起即可使用，並添加 Avocado Perseose®（酪梨複合活源醣）強化皮膚屏障。", "points": 4}, {"id": 14, "topic": "兒童與孕婦防曬", "level": "深入", "question": "根據 EVEILS 研究，UV 照射後，嬰幼兒表皮相較成人表皮受到更嚴重的影響，以下何者不是該研究發現的差異？", "options": {"A": "嬰幼兒的曬傷細胞（Sunburn cells）數量較多", "B": "嬰幼兒的整合素蛋白（Integrin alpha-6）幹細胞標記受到更強烈抑制", "C": "嬰幼兒的黑色素細胞數量比成人少", "D": "嬰幼兒的抗氧化、DNA 修復標記受到更強烈抑制"}, "answer": "C", "explanation": "EVEILS 研究透過三種方法比較嬰幼兒與成人表皮在 UV 照射 24 小時後的差異。選項C是錯誤的，因為黑色素細胞數量並非研究重點，且嬰幼兒與成人的黑色素細胞數量相近，差異在於黑色素細胞的「活性」和「成熟度」。這就是為什麼 Mustela 添加 Avocado Perseose®，能保護表皮幹細胞儲備，對抗 UV 傷害，研究顯示可保護 80% 的幹細胞標記。", "points": 4}, {"id": 15, "topic": "兒童與孕婦防曬", "level": "基礎", "question": "孕婦在懷孕期間為什麼特別需要加強防曬？", "options": {"A": "孕婦皮膚比一般人更薄", "B": "荷爾蒙變化使皮膚對紫外線更敏感，容易產生孕斑", "C": "胎兒會吸收防曬成分", "D": "孕婦不能使用任何防曬產品"}, "answer": "B", "explanation": "懷孕期間，體內雌激素和黃體素大幅增加，會刺激黑色素細胞活性，使皮膚對紫外線更敏感。若未做好防曬，容易出現孕斑（黃褐斑/肝斑），尤其在顴骨、額頭、上唇等部位。Mustela 防曬系列經過嚴格安全測試，配方溫和，0% 添加 Parabens、酒精、香料，孕婦可安心使用，有效預防孕斑形成。", "points": 4}, {"id": 16, "topic": "兒童與孕婦防曬", "level": "進階", "question": "關於 6 個月以下寶寶的防曬，以下何者正確？", "options": {"A": "6個月以下寶寶完全不能使用任何防曬產品", "B": "應優先使用物理遮蔽，若無法避免曝曬可少量使用防曬", "C": "6個月以下寶寶可以長時間曝曬在陽光下", "D": "寶寶皮膚天然防護力強，不需要防曬"}, "answer": "B", "explanation": "對於 6 個月以下的寶寶，防曬建議：(1) 避免在 10AM-4PM 帶寶寶外出；(2) 使用遮陽傘、推車遮陽罩；(3) 穿著長袖衣物、寬邊帽；(4) 若無法避免曝曬，可在暴露部位少量塗抹防曬。Mustela 防曬系列標示「出生起即可使用*」（*在無法避免曝曬的情況下），配方經兒科測試，高度耐受。", "points": 4}, {"id": 17, "topic": "兒童與孕婦防曬", "level": "進階", "question": "UV 照射對嬰幼兒造成的主要傷害，以下何者錯誤？", "options": {"A": "UV 會降低嬰幼兒皮膚的天然防禦能力", "B": "UV 會阻礙皮膚建構、維持品質與健康的自然過程", "C": "UV 會損害表皮幹細胞（Stem cells）", "D": "UV 只影響皮膚表面，不會深入真皮層"}, "answer": "D", "explanation": "根據 EVEILS 研究，UV 對嬰幼兒皮膚的傷害包括降低天然防禦、阻礙自然過程、損害幹細胞。選項D錯誤，因為 UVA 穿透力強，可深入真皮層，破壞膠原蛋白和彈性纖維。這就是為什麼 Mustela 特別強調「從出生起即可使用」，提供嬰幼兒最高等級的 UV 防護。", "points": 4}, {"id": 18, "topic": "兒童與孕婦防曬", "level": "基礎", "question": "根據費茲派翠克量表 (Fitzpatrick scale)，深色皮膚（第六型）的天然防曬係數（SPF）大約是淺色皮膚（第一型）的多少倍？", "options": {"A": "相同", "B": "2倍", "C": "4倍", "D": "10倍"}, "answer": "C", "explanation": "費茲派翠克量表 (Fitzpatrick scale) 是評估皮膚對 UV 反應的標準工具，將皮膚分為六型。研究顯示：深色皮膚天然 SPF ≈ 13.4，淺色皮膚天然 SPF ≈ 3.3，比例約 4 倍。重要提醒：所有膚色都需要防曬！深色皮膚雖有較好的天然防護，但仍會曬傷、老化。Mustela 防曬系列適合所有膚色。", "points": 4}, {"id": 19, "topic": "兒童與孕婦防曬", "level": "進階", "question": "皮膚的天然防護機制包括哪些？", "options": {"A": "只有黑色素（Melanin）", "B": "只有角質層（Horny layer）", "C": "角質層、黑色素屏障、毛髮、細胞自我修復機制", "D": "只有皮脂膜"}, "answer": "C", "explanation": "皮膚具有多重天然防護系統：角質層、黑色素屏障、毛髮、細胞自我修復機制。然而，這些天然防護並不足以完全保護皮膚免受陽光傷害，特別是嬰幼兒的防護系統尚未成熟。因此必須根據陽光強度、季節、年齡、光分型等因素，使用適當的防曬產品。Mustela 提供醫學級防曬保護，補足天然防護的不足。", "points": 4}, {"id": 20, "topic": "防曬成分與配方", "level": "基礎", "question": "歐盟化妝品法規核准可用於防曬產品的防曬濾劑共有多少種？", "options": {"A": "15 種", "B": "21 種", "C": "27 種", "D": "35 種"}, "answer": "C", "explanation": "根據歐盟化妝品法規，防曬產品中可含有的防曬濾劑清單共有 27 種。Mustela 從這 27 種核准濾劑中，精選 4 種高耐受性的有機濾劑，提供最佳防護效果，同時確保極高的皮膚耐受性。", "points": 4}, {"id": 21, "topic": "防曬成分與配方", "level": "基礎", "question": "Mustela 防曬系列不含以下哪些爭議性成分？", "options": {"A": "只不含 Oxybenzone（二苯甲酮/氧苯酮）", "B": "不含 Oxybenzone（二苯甲酮/氧苯酮）、Octinoxate（甲氧基肉桂酸辛酯/桂皮酸鹽）、Octocrylene（奧克立林/辛烯基甲氧苯酚）", "C": "只不含 Parabens（對羥基苯甲酸酯類）", "D": "不含任何防曬濾劑"}, "answer": "B", "explanation": "Mustela 防曬系列承諾不含 Oxybenzone、Octinoxate、Octocrylene 三種爭議性防曬濾劑。此外，配方也 0% 添加 Parabens、酒精、香料、Phenoxyethanol。產品符合海洋友善標準，可生物分解，包裝使用 100% 可回收材料。", "points": 4}, {"id": 22, "topic": "防曬成分與配方", "level": "基礎", "question": "Mustela 的專利成分 Avocado Perseose®（酪梨複合活源醣）的主要功效是什麼？", "options": {"A": "只能保濕", "B": "強化皮膚屏障、保持水合度、保護表皮幹細胞儲備", "C": "只能防曬", "D": "只能美白"}, "answer": "B", "explanation": "Avocado Perseose®是 Mustela 的專利天然活性成分，具有三大功效：強化皮膚屏障、保持皮膚水合度、保護表皮幹細胞儲備。研究顯示，在 UV 照射下，Avocado Perseose® 能保護 80% 的幹細胞標記。此成分來自負責任供應鏈，是 Mustela 嬰幼兒系列的核心成分。", "points": 4}, {"id": 23, "topic": "防曬成分與配方", "level": "進階", "question": "Mustela 防曬系列精選了多少種高耐受性有機防曬濾劑？", "options": {"A": "2 種", "B": "3 種", "C": "4 種", "D": "6 種"}, "answer": "C", "explanation": "Mustela 防曬系列結合 4 種嚴選的高耐受性有機防護濾劑，這些濾劑經臨床測試適用於敏感、異位性傾向及嬰兒肌膚，出生起即可安全使用，提供 UVA 與 UVB 寬譜防護，符合歐盟標準。Mustela 採用精簡配方哲學，展現「精簡而有效」的理念。", "points": 4}, {"id": 24, "topic": "防曬成分與配方", "level": "深入", "question": "關於 UVA 透過自由基（Free Radicals）傷害皮膚的機制，以下敘述何者最完整？", "options": {"A": "UVA 直接破壞 DNA", "B": "UVA 產生自由基 → 搶奪電子 → 引發連鎖反應 → 氧化壓力 → 損害 DNA/蛋白質/脂質", "C": "UVA 只會造成曬黑，不會傷害細胞", "D": "自由基只會破壞皮膚表面，不會深入真皮層"}, "answer": "B", "explanation": "UVA 的傷害機制：(1) UVA 穿透真皮層產生活性氧物質；(2) 自由基搶奪電子；(3) 連鎖反應；(4) 氧化壓力；(5) 最終結果：DNA 受損、蛋白質受損、脂質受損。Mustela 的防護：SPF50+ UVA/UVB 廣譜防護 + Avocado Perseose® 保護細胞資源，符合歐盟最高 UVA 防護標準。", "points": 4}, {"id": 25, "topic": "防曬成分與配方", "level": "進階", "question": "有機防曬濾劑（化學性防曬）與物理性防曬的主要差異是什麼？", "options": {"A": "有機濾劑吸收 UV，物理濾劑反射/散射 UV", "B": "有機濾劑只防 UVA，物理濾劑只防 UVB", "C": "有機濾劑較刺激，物理濾劑完全無刺激", "D": "兩者作用機制完全相同"}, "answer": "A", "explanation": "有機濾劑吸收 UV 能量並轉化為熱能釋放；物理濾劑反射和散射 UV。兩者都可防 UVA 和 UVB。", "points": 4}, {"id": 26, "topic": "防曬成分與配方", "level": "進階", "question": "Mustela 防曬產品符合哪些環保與安全承諾？", "options": {"A": "只符合海洋友善（Reef-safe）", "B": "只使用可回收包裝", "C": "海洋友善、配方可生物分解、100% 可回收包裝、ISO 14001 認證", "D": "只通過基本安全測試"}, "answer": "C", "explanation": "Mustela 對環境保護的全方位承諾包括：海洋友善、配方可生物分解、100% 可回收和可再生材料包裝、ISO 14001 認證的環保生產設施、負責任供應鏈。這些承諾不僅保護使用者健康，也守護地球環境，體現「對人體安全、對地球友善」的雙重承諾。", "points": 4}, {"id": 27, "topic": "Mustela 產品特色", "level": "基礎", "question": "Mustela 防曬系列適用於哪些膚質？（請選出最完整的答案）", "options": {"A": "只適合正常膚質的嬰兒", "B": "適合敏感肌、陽光不耐受、異位性傾向肌膚（如濕疹）、易敏或術後肌膚", "C": "適合成人敏感肌", "D": "只適合沒有皮膚問題的健康膚質"}, "answer": "B", "explanation": "Mustela 防曬乳液適用膚質範圍：\n\n✅ 敏感的嬰兒肌膚（Sensitive infant skin）\n✅ 陽光不耐受肌膚（Sun-intolerant skin）\n✅ 異位性傾向肌膚（Atopy-prone skin，如濕疹 Eczema）\n✅ 易敏或術後受損肌膚（Allergy-prone or post-procedure skin）", "points": 4}, {"id": 28, "topic": "Mustela 產品特色", "level": "基礎", "question": "Mustela 防曬產品的「Very Water Resistant」（極抗水）認證代表什麼？", "options": {"A": "在水中抵抗 20 分鐘", "B": "在水中抵抗 40 分鐘", "C": "在水中抵抗 80 分鐘", "D": "在水中抵抗 120 分鐘"}, "answer": "C", "explanation": "Mustela 防曬產品經過嚴格的抗水性測試，獲得「Very Water Resistant」認證，代表在水中（包括海水和氯化水）浸泡 80 分鐘後，仍能維持防曬效果。此外也通過汗水抵抗測試、沙摩擦抵抗測試。但仍建議游泳、大量流汗後立即補擦，確保持續防護。", "points": 4}, {"id": 29, "topic": "Mustela 產品特色", "level": "進階", "question": "根據臨床研究（64 位嬰幼兒受試者，使用 21 天），Mustela 防曬產品在「無泛白效果（No white cast）」的滿意度是多少？", "options": {"A": "75%", "B": "85%", "C": "92%", "D": "100%"}, "answer": "C", "explanation": "Mustela 防曬產品經過嚴格的臨床使用測試，在 64 位嬰幼兒受試者使用 21 天後的滿意度調查顯示：無泛白效果 92%、不油膩 93%、不黏膩 87%、塗抹後皮膚保濕 95%、在皮膚上形成保護膜 98%。這些數據證明 Mustela 不僅防護力強，質地舒適度也極高，非常適合每日使用。", "points": 4}, {"id": 30, "topic": "兒童與孕婦防曬", "level": "基礎", "question": "根據 EVEILS 研究結論，UV 紫外線對細胞的傷害效應有何特點？", "options": {"A": "UV 對所有年齡層的皮膚傷害程度相同", "B": "UV 對嬰幼兒細胞的傷害效應比成人更為嚴重", "C": "UV 只傷害成人皮膚，對嬰幼兒影響較小", "D": "UV 只影響皮膚表面，不影響幹細胞"}, "answer": "B", "explanation": "EVEILS 研究透過三種研究方法（表皮組織學分析、基因表現研究、免疫標記法），比較嬰幼兒與成人表皮在接受 UV 照射後的差異，得出三大結論：\n\n紫外線對細胞的傷害效應，在嬰幼兒身上更為嚴重（Sunburn cells 曬傷細胞數量更多）\nUV 會降低嬰幼兒的天然防禦能力（抗氧化、抗菌及 DNA 修復標記受到更強烈的抑制）\nUV 會阻礙皮膚建構、維持品質與健康的自然過程（屏障標記受到更強烈的抑制）\nUV 會損害表皮幹細胞（整合素蛋白 Integrin alpha-6 幹細胞標記受到更強烈的抑制）\n\n這就是為什麼嬰幼兒比成人更需要防曬保護，Mustela 提供「從出生起即可使用」的 SPF50+ 防曬系列，配合 Avocado Perseose®（酪梨複合活源醣）保護表皮幹細胞。", "points": 4}, {"id": 31, "topic": "兒童與孕婦防曬", "level": "深入", "question": "EVEILS 研究使用了哪三種研究方法來比較嬰幼兒與成人皮膚在接受 UV 照射後的差異？", "options": {"A": "臨床測試、動物實驗、問卷調查", "B": "表皮組織學與曬傷細胞形態分析、基因表現研究（Profiles）、免疫標記法（幹細胞標記）", "C": "SPF 測試、抗水測試、皮膚過敏測試", "D": "血液分析、皮膚切片、X 光掃描"}, "answer": "B", "explanation": "EVEILS 研究採用體外（In Vitro）方式，透過三種方法進行：(1) 表皮組織學與曬傷細胞的形態分析：比較嬰幼兒與成人表皮在接受 UV 照射 24 小時後的曬傷細胞（Sunburn cells）數量，結果：嬰幼兒的曬傷細胞數量較多；(2) 基因表現研究（Profiles）：比較嬰幼兒與成人表皮基因的表現圖譜，結果：嬰幼兒的防禦標記（抗氧化、抗菌、DNA 修復）及屏障標記（結構完整性、表皮修復）受到更強烈的抑制；(3) 免疫標記法（Immunolabeling）：比較嬰幼兒與成人表皮中，幹細胞標記（整合素蛋白 Integrin alpha-6）的免疫標記情形，結果：嬰幼兒的幹細胞標記受到更強烈的抑制。三種方法共同證明：UV 對嬰幼兒皮膚的傷害遠比成人嚴重，因此需要更高等級的防曬保護。Mustela 添加 Avocado Perseose®（酪梨複合活源醣）保護表皮幹細胞儲備，對抗 UV 傷害。", "points": 4}, {"id": 32, "topic": "Mustela 產品特色", "level": "進階", "question": "Mustela 防曬系列的品牌願景（Ambition）是什麼？", "options": {"A": "成為亞洲市場第一", "B": "成為全家人首選的防曬領導品牌（n°1 sun care range for the whole family）", "C": "只專注嬰兒防曬市場", "D": "成為最便宜的防曬品牌"}, "answer": "B", "explanation": "Mustela 防曬系列的戰略定位：成為全家人首選的防曬領導品牌。策略：提供首個專為全家人設計且從出生起即可使用的防曬系列，採用生態設計，且適用於從嬰兒到成人的所有膚質。核心承諾：海洋保護是防曬系列承諾的重點，對環境產生正面影響。", "points": 4}, {"id": 33, "topic": "Mustela 產品特色", "level": "深入", "question": "某人在 SPF 測試標準用量（2 mg/cm²）下，SPF30 可保護 5 小時不曬傷。但實際使用時大多數人只塗抹約 0.5-1 mg/cm²。請問實際防護效果大約降到多少？", "options": {"A": "SPF 30（不變）", "B": "SPF 15-20", "C": "SPF 5-10", "D": "SPF 2-3"}, "answer": "C", "explanation": "SPF 與用量的關係（非線性）：標準用量 2 mg/cm² = SPF 30；用量減半 1 mg/cm² → SPF 7-10；0.5 mg/cm² → SPF 3-5。為什麼？SPF 的計算不是線性的，而是對數關係。實際建議：(1) 選更高 SPF；(2) 塗抹足量；(3) 重複塗抹；(4) 定時補擦。Mustela SPF50+ 確保即使塗抹量不足，仍能提供足夠防護。", "points": 4}, {"id": 34, "topic": "Mustela 產品特色", "level": "進階", "question": "Mustela 防曬產品與競品相比，主要優勢有哪些？", "options": {"A": "只有 SPF 值較高", "B": "SPF50+ 全家適用、敏感肌適用、極抗水、無泛白、提升屏障（Avocado Perseose®）、精簡配方", "C": "只有價格較低", "D": "只有包裝較美觀"}, "answer": "B", "explanation": "Mustela 防曬系列的六大競爭優勢：(1) SPF50+ 極高防護；(2) 適用範圍最廣；(3) 極抗水（80分鐘）；(4) 質地優越（不油膩93%、無泛白92%、不黏膩87%）；(5) 保護肌膚活源（Avocado Perseose®）；(6) 精簡配方。這些優勢體現了 Mustela「專業、安全、有效」的品牌承諾。", "points": 4}, {"id": 35, "topic": "Mustela 產品特色", "level": "基礎", "question": "Mustela 防曬配方中「0% 添加」的成分包括哪些？", "options": {"A": "只不含 Parabens（對羥基苯甲酸酯類）", "B": "不含 Parabens、Phenoxyethanol（苯氧乙醇）、酒精、香料", "C": "只不含酒精", "D": "只不含香料"}, "answer": "B", "explanation": "Mustela 防曬系列的「0% 添加」承諾：0% Parabens、0% Phenoxyethanol、0% Alcohol、0% Fragrance、0% 有害防曬濾劑（不含 Oxybenzone、Octinoxate、Octocrylene）。Mustela 不因商業考量而妥協安全性，堅持使用最安全、最溫和的成分，特別是針對最脆弱的嬰幼兒肌膚。", "points": 4}, {"id": 36, "topic": "Mustela 產品特色", "level": "基礎", "question": "為什麼 Mustela 強調「從出生起即可使用」這一特點？", "options": {"A": "只是行銷話術", "B": "因為嬰幼兒皮膚更脆弱，能通過嬰兒標準代表最高安全性", "C": "因為只想賣給嬰兒", "D": "因為成人不需要防曬"}, "answer": "B", "explanation": "「從出生起即可使用」代表的意義：(1) 最高安全標準；(2) 嚴格測試（兒科測試、皮膚科測試、敏感肌測試、異位性皮膚炎測試）；(3) 溫和配方；(4) 家庭便利性；(5) 品牌信任（75年專業）。重要提醒：6個月以下嬰兒應優先使用物理遮蔽。Mustela 的承諾：讓父母安心，讓寶寶受到最高等級的保護。", "points": 4}, {"id": 37, "topic": "Mustela 產品特色", "level": "進階", "question": "一位客戶諮詢：「我的寶寶有異位性皮膚炎（濕疹），可以使用防曬嗎？會不會刺激？」正確的回答是？", "options": {"A": "異位性皮膚炎不能使用任何防曬", "B": "Mustela 防曬經異位性傾向肌膚測試，極高耐受性，可安全使用，且防曬對保護脆弱肌膚很重要", "C": "只能使用物理性防曬", "D": "濕疹寶寶不需要防曬"}, "answer": "B", "explanation": "異位性皮膚炎寶寶的防曬建議：(1) 更需要防曬；(2) Mustela 的適用性：經過異位性傾向肌膚臨床測試、極高耐受性、0%有害成分；(3) 使用建議：選擇 SPF50+、避開急性發作期、搭配物理遮蔽、使用後清潔並保濕。Mustela 擁有 75 年兒科皮膚學專業，深度理解異位性皮膚炎的需求。", "points": 4}, {"id": 38, "topic": "Mustela 產品特色", "level": "基礎", "question": "Mustela 防曬系列的核心定位「全方位守護」（The protection that has it all）包含哪些意義？", "options": {"A": "只是行銷口號", "B": "全家適用、全方位防護、全膚質友善、全面安全", "C": "只強調防曬效果", "D": "只強調價格優惠"}, "answer": "B", "explanation": "Mustela 防曬系列的品牌定位「全方位守護」包含：(1) 全家適用；(2) 全方位防護（UVA/UVB + 細胞保護 + 抗水抗汗）；(3) 全膚質友善；(4) 全面安全（皮膚安全 + 環境安全）；(5) 全程專業（75年背景 + 臨床測試 + 兒科認證）。這個定位體現 Mustela 的使命：簡化防曬選擇，讓每個家庭成員都能獲得專業級防護。", "points": 4}, {"id": 39, "topic": "Mustela 產品特色", "level": "基礎", "question": "什麼是「海洋友善」（Reef-safe）防曬？", "options": {"A": "只要不含化學成分就是海洋友善", "B": "不含對珊瑚礁和海洋生態有害的成分（如 Oxybenzone、Octinoxate）", "C": "只有物理性防曬才是海洋友善", "D": "所有防曬產品都是海洋友善"}, "answer": "B", "explanation": "海洋友善（Reef-safe）防曬的定義與重要性：某些化學防曬濾劑會導致珊瑚白化、損害珊瑚的 DNA、影響珊瑚繁殖、破壞海洋生態系統。Mustela 的承諾：不含 Oxybenzone二苯甲酮、Octinoxate甲氧基肉桂酸乙基己酯、Octocrylene奧克立林，配方可生物分解，通過海洋友善認證。選擇建議：去海邊、浮潛、潛水時，優先選擇 Mustela 等海洋友善防曬。", "points": 4}, {"id": 40, "topic": "正確使用方式", "level": "基礎", "question": "防曬產品的標準塗抹用量是多少？", "options": {"A": "1 mg/cm²", "B": "2 mg/cm²", "C": "3 mg/cm²", "D": "5 mg/cm²"}, "answer": "B", "explanation": "國際公認的防曬產品標準塗抹用量是 2 mg/cm²。實際應用換算：全身約一個小酒杯的量（約30ml）、臉部+脖子約半茶匙的量。大多數人實際只塗抹 0.5-1 mg/cm²，導致實際防護效果大幅下降！建議：選擇更高SPF、分兩次塗抹、確保塗抹均勻。", "points": 4}, {"id": 41, "topic": "正確使用方式", "level": "基礎", "question": "防曬產品應該在什麼時候塗抹？", "options": {"A": "出門時立即塗抹", "B": "到達目的地後塗抹", "C": "出門前 30 分鐘塗抹", "D": "出門前 2 小時塗抹"}, "answer": "C", "explanation": "防曬產品應該在出門前 30 分鐘塗抹。原因：(1) 有機防曬濾劑需要時間在皮膚表面形成均勻的保護膜；(2) 讓產品充分吸收、固定，提高抗水、抗汗能力；(3) 確保一出門就有完整防護。正確流程：出門前 30 分鐘塗抹 → 出門 → 到達後視需要補擦 → 之後每 2 小時補擦。", "points": 4}, {"id": 42, "topic": "正確使用方式", "level": "基礎", "question": "防曬產品應該多久補擦一次？", "options": {"A": "每 30 分鐘", "B": "每 1 小時", "C": "每 2 小時", "D": "整天只需塗抹一次"}, "answer": "C", "explanation": "防曬產品應該每 2 小時補擦一次，並在以下情況立即補擦：游泳後、大量流汗後、劇烈運動後、用毛巾擦拭後。為什麼需要補擦？防曬膜會因摩擦、汗水、皮脂分泌而逐漸流失。實際建議：設定手機鬧鐘提醒、隨身攜帶防曬產品、戶外活動建議補擦頻率更高（每 1-1.5小時）。", "points": 4}, {"id": 43, "topic": "正確使用方式", "level": "進階", "question": "根據研究，大多數人在塗抹防曬時常見的錯誤有哪些？", "options": {"A": "只有用量不足", "B": "用量不足、眼周和鼻下漏塗、右撇子右側塗較多（左撇子相反）", "C": "只有塗抹時機錯誤", "D": "只有忘記補擦"}, "answer": "B", "explanation": "研究發現的常見防曬錯誤：(1) 用量不足：大多數人只塗抹建議量的25-50%；(2) 部位漏塗：超過50%的人沒有在眼周或鼻下塗抹；(3) 塗抹不均：右撇子右側塗較多；(4) 時機錯誤：98%在到達後才塗抹；(5) 不補擦：85%的家長不會重新塗抹。改善建議：對著鏡子塗抹、特別注意易忽略部位、分兩次塗抹。", "points": 4}, {"id": 44, "topic": "正確使用方式", "level": "進階", "question": "完整的防曬防護應該包括哪些措施？", "options": {"A": "只需要塗抹防曬霜", "B": "只需要穿長袖", "C": "防曬霜 + 寬邊帽 + 防曬衣物 + 遮陽 + 避開 10AM-4PM", "D": "只需要待在室內"}, "answer": "C", "explanation": "完整的光防護最佳實踐：(1) 防曬產品：塗抹適量SPF50+，每2小時補擦；(2) 物理遮蔽：寬邊帽、防曬衣物、太陽眼鏡；(3) 尋求陰涼處；(4) 避開高峰：10AM-4PM；(5) 嬰幼兒特別注意：6個月以下盡量避免直接陽光。綜合防護理念：防曬霜是重要工具，但不是唯一手段。", "points": 4}, {"id": 45, "topic": "正確使用方式", "level": "進階", "question": "為什麼即使在室內（靠窗）或開車時也需要防曬？", "options": {"A": "不需要，室內和車內都很安全", "B": "UVA 可以穿透玻璃，仍會造成皮膚老化", "C": "只有在夏天才需要", "D": "只需要擦 SPF15 就夠了"}, "answer": "B", "explanation": "室內和車內仍需防曬的科學原理：(1) UVA 穿透力強：可以穿透普通玻璃窗；(2) UVA 的傷害：雖然不會立即曬傷，但會累積造成皮膚老化、色斑、皺紋；(3) 辦公室窗邊：長期坐在窗邊工作，單側臉部可能累積大量UVA傷害；(4) 開車：臉部和手臂長期暴露。建議：室內工作仍需每日使用SPF30-50防曬。", "points": 4}, {"id": 46, "topic": "正確使用方式", "level": "深入", "question": "關於防曬產品的抗水性測試標準，以下何者正確？", "options": {"A": "只需在水中浸泡 20 分鐘", "B": "需經過兩次 20 分鐘浸泡（中間乾燥 15 分鐘），共 80 分鐘測試", "C": "只需測試海水，不需測試氯水", "D": "抗水產品不需要補擦"}, "answer": "B", "explanation": "「Very Water Resistant」的嚴格測試標準：(1) 塗抹產品後乾燥15-30分鐘；(2) 第一次20分鐘水中浸泡；(3) 乾燥15分鐘（不擦拭）；(4) 第二次20分鐘水中浸泡；(5) 再乾燥15分鐘；(6) 測量SPF值，需維持在標示值以上。測試水質：需同時測試海水和氯化水。重要提醒：即使通過「極抗水」測試，仍建議游泳後立即補擦。", "points": 4}, {"id": 47, "topic": "正確使用方式", "level": "進階", "question": "研究顯示，超過 50% 的人在塗抹防曬時會漏掉哪些部位？", "options": {"A": "手臂和腿部", "B": "眼睛周圍和鼻子下方", "C": "胸部和背部", "D": "手掌和腳掌"}, "answer": "B", "explanation": "根據研究，超過50%的受試者在塗抹防曬時沒有在眼睛周圍或鼻子下方塗抹防曬。其他常被忽略的部位：耳朵、脖子後方、手背和腳背、髮際線、嘴唇周圍。後果：這些部位皮膚薄、敏感，更容易曬傷、老化，甚至是皮膚癌的高風險區。正確做法：對著鏡子仔細塗抹、請他人協助塗抹背部。Mustela 配方溫和，適合塗抹在臉部所有區域。", "points": 4}, {"id": 48, "topic": "正確使用方式", "level": "進階", "question": "以下哪種地表對紫外線的反射率最高？", "options": {"A": "沙灘（15%）", "B": "海水（25%）", "C": "草地（5%）", "D": "雪地（50-88%）"}, "answer": "D", "explanation": "不同地表對 UV 的反射率（WHO / Cancer Council 數據）：雪地 50-88%（最高！）、海沫 25%、沙灘 15%、混凝土 10-12%、水面 10-30%、草地 2-5%。這就是為什麼在雪地、海邊特別容易曬傷，因為除了直接照射的 UV，還有大量反射的 UV。Mustela SPF50+ 提供全方位防護，適合各種高反射環境使用，極抗水配方特別適合海邊和雪地運動。", "points": 4}, {"id": 49, "topic": "正確使用方式", "level": "基礎", "question": "Mustela 通過「極抗水 80 分鐘」測試，但為什麼仍建議游泳後立即補擦？", "options": {"A": "測試標準不準確", "B": "80分鐘是實驗室條件，實際游泳會有毛巾擦拭、摩擦等因素加速流失", "C": "只是行銷建議", "D": "80分鐘後防曬完全失效"}, "answer": "B", "explanation": "雖然 Mustela 通過嚴格的「極抗水80分鐘」測試，仍建議游泳後立即補擦的原因：(1) 實驗室vs實際條件：測試是在控制條件下進行，實際游泳會有水流沖刷、身體運動摩擦、用毛巾擦拭；(2) 80分鐘是「維持防護」不是「完全不流失」；(3) 累積防護更重要；(4) 安全邊際。正確使用：游泳前塗抹 → 游泳中每40-60分鐘可補擦 → 游泳後立即補擦 → 繼續每2小時定時補擦。", "points": 4}, {"id": 50, "topic": "正確使用方式", "level": "基礎", "question": "在遮陽傘下，我是否就完全受到紫外線保護？", "options": {"A": "是的，遮陽傘可以完全阻擋 UV", "B": "不是，遮陽傘無法提供充分保護，仍需搭配防曬霜", "C": "只有在海邊才需要防曬霜", "D": "遮陽傘比防曬霜更有效"}, "answer": "B", "explanation": "遮陽傘的防護限制：(1) 只能阻擋「直接照射」的UV，無法阻擋「反射」的UV；(2) 在高反射環境（沙灘、雪地），遮陽傘下仍有大量反射UV；(3) 遮陽傘的UVA/UVB阻擋率差異很大，一般遮陽傘可能只阻擋50-70% UV。正確防護策略：遮陽傘+防曬霜+防曬衣物+太陽眼鏡+避開高峰。結論：遮陽傘是輔助工具，不能取代防曬霜。", "points": 4}];
+
+function selectQ(){
+  const m={'基礎':[],'進階':[],'深入':[]};
+  ALL_QUESTIONS.forEach(q=>{if(m[q.level])m[q.level].push(q);});
+  const sh=a=>[...a].sort(()=>Math.random()-.5);
+  return sh([...sh(m['基礎']).slice(0,13),...sh(m['進階']).slice(0,9),...sh(m['深入']).slice(0,3)]);
+}
+
+// ════════════════════════════════
+// 狀態
+// ════════════════════════════════
+let quizQs=[],curIdx=0,score=0,correctCnt=0,answered=false;
+let userEmail='',quizStart=0,timerInt=null;
+
+// ════════════════════════════════
+// 畫面
+// ════════════════════════════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════════
+// 首頁
+// ════════════════════════════════
+function onEmailInput(){
+  const v=document.getElementById('user-email').value.trim();
+  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  document.getElementById('email-err').style.display=ok||!v?'none':'block';
+
+  const cfg=loadCfg();
+  const warn=document.getElementById('attempt-warn');
+  if(ok && cfg.maxAttempts>0){
+    const cnt=loadRec().filter(r=>r.email===v).length;
+    if(cnt>=cfg.maxAttempts){
+      warn.textContent=`⚠️ 您已達測驗上限（${cfg.maxAttempts} 次），無法再次參加`;
+      warn.style.display='block';
+      document.getElementById('btn-begin').disabled=true;
+      return;
+    }else if(cnt>0){
+      warn.textContent=`您已測驗 ${cnt} 次，上限 ${cfg.maxAttempts} 次`;
+      warn.style.display='block';
+    }else{warn.style.display='none';}
+  }else{warn.style.display='none';}
+  document.getElementById('btn-begin').disabled=!ok;
+}
+
+function beginQuiz(){
+  const cfg=loadCfg();
+  userEmail=document.getElementById('user-email').value.trim();
+  quizQs=selectQ();
+  curIdx=0;score=0;correctCnt=0;answered=false;
+  quizStart=Date.now();
+  show('quiz-screen');
+  renderQ();
+  startTimer(cfg.timeLimit);
+}
+
+function startTimer(mins){
+  if(timerInt)clearInterval(timerInt);
+  if(mins<=0){document.getElementById('timer-bar').style.display='none';return;}
+  document.getElementById('timer-bar').style.display='block';
+  let rem=mins*60;
+  updateTimer(rem);
+  timerInt=setInterval(()=>{
+    rem--;
+    updateTimer(rem);
+    if(rem<=0){clearInterval(timerInt);finishQuiz();}
+  },1000);
+}
+function updateTimer(s){
+  const el=document.getElementById('timer-display');
+  el.textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  el.style.color=s<=60?'#E74C3C':'var(--yellow)';
+}
+
+// ════════════════════════════════
+// 測驗
+// ════════════════════════════════
+function renderQ(){
+  const q=quizQs[curIdx];
+  answered=false;
+  document.getElementById('q-meta').innerHTML=
+    `<span class="tag tag-topic">${q.topic}</span><span class="tag tag-${q.level}">${q.level}</span>`;
+  document.getElementById('q-text').textContent=q.question;
+
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  ['A','B','C','D'].forEach(lt=>{
+    const b=document.createElement('button');
+    b.className='opt-btn';
+    b.innerHTML=`<span class="opt-letter">${lt}</span><span>${q.options[lt]}</span>`;
+    b.onclick=()=>pick(lt,b);
+    opts.appendChild(b);
+  });
+
+  document.getElementById('expl-box').classList.remove('show');
+  document.getElementById('btn-next').classList.remove('show');
+  document.getElementById('cur-q').textContent=curIdx+1;
+  document.getElementById('prog-fill').style.width=`${(curIdx/25)*100}%`;
+  document.getElementById('live-score').textContent=`得分：${score}`;
+  document.getElementById('btn-next-txt').textContent=curIdx===24?'查看結果':'下一題';
+}
+
+function pick(lt,btn){
+  if(answered)return;
+  answered=true;
+  const q=quizQs[curIdx];
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.querySelector('.opt-letter').textContent===q.answer)b.classList.add('correct');
+  });
+  if(lt===q.answer){score+=q.points;correctCnt++;}
+  else btn.classList.add('wrong');
+  document.getElementById('expl-txt').textContent=q.explanation;
+  document.getElementById('expl-box').classList.add('show');
+  document.getElementById('btn-next').classList.add('show');
+  document.getElementById('live-score').textContent=`得分：${score}`;
+}
+
+function nextQ(){
+  curIdx++;
+  if(curIdx>=25)finishQuiz();
+  else renderQ();
+}
+
+// ════════════════════════════════
+// 結束 & 送出
+// ════════════════════════════════
+function finishQuiz(){
+  if(timerInt)clearInterval(timerInt);
+  const cfg=loadCfg();
+  const elapsed=Math.round((Date.now()-quizStart)/1000);
+  const pass=score>=cfg.passScore;
+  const rec={email:userEmail,time:new Date().toLocaleString('zh-TW'),score,correct:correctCnt,total:25,elapsed,pass};
+
+  show('submit-screen');
+
+  // 同時儲存本地 & 送 Google Sheets
+  addRec(rec);
+  fetch(SCRIPT_URL,{
+    method:'POST',
+    body:JSON.stringify(rec)
+  }).catch(()=>{});// 送失敗不影響顯示結果
+
+  setTimeout(()=>showResult(rec,cfg),1500);
+}
+
+function showResult(rec,cfg){
+  show('result-screen');
+  const pass=rec.score>=cfg.passScore;
+  setTimeout(()=>{
+    document.getElementById('res-score').textContent=rec.score;
+    document.getElementById('res-correct').textContent=rec.correct;
+    document.getElementById('res-wrong').textContent=25-rec.correct;
+    document.getElementById('res-pct').textContent=Math.round((rec.correct/25)*100)+'%';
+    document.getElementById('arc').style.strokeDashoffset=521-(rec.score/100)*521;
+  },300);
+
+  let emoji,title,msg;
+  if(rec.score>=90){emoji='🏆';title='太優秀了！';msg='您對 Mustela 防曬系列有非常深入的專業知識，是客戶最可信賴的防曬專家！';}
+  else if(rec.score>=80){emoji='🌟';title='非常出色！';msg=`恭喜通過測驗！您的防曬專業知識相當紮實，繼續保持！`;}
+  else if(rec.score>=60){emoji='📝';title='繼續努力！';msg=`您得了 ${rec.score} 分，未達及格分數（${cfg.passScore} 分），建議重新複習後再次挑戰！`;}
+  else{emoji='📚';title='再接再厲！';msg=`這次得了 ${rec.score} 分，未達及格（${cfg.passScore} 分），建議重新複習 Mustela 防曬訓練資料！`;}
+
+  document.getElementById('res-emoji').textContent=emoji;
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-sub').textContent=pass?`🎉 恭喜通過！（及格分數：${cfg.passScore} 分）`:`❌ 未通過（及格分數：${cfg.passScore} 分）`;
+  document.getElementById('res-msg').textContent=msg;
+}
+
+function tryAgain(){
+  const cfg=loadCfg();
+  if(cfg.maxAttempts>0){
+    const cnt=loadRec().filter(r=>r.email===userEmail).length;
+    if(cnt>=cfg.maxAttempts){
+      document.getElementById('limit-msg').textContent=`您（${userEmail}）已達測驗上限（${cfg.maxAttempts} 次）。`;
+      document.getElementById('limit-modal').classList.add('show');
+      return;
+    }
+  }
+  quizQs=selectQ();curIdx=0;score=0;correctCnt=0;answered=false;quizStart=Date.now();
+  show('quiz-screen');renderQ();
+  startTimer(loadCfg().timeLimit);
+}
+
+function backHome(){
+  document.getElementById('user-email').value='';
+  document.getElementById('btn-begin').disabled=true;
+  document.getElementById('attempt-warn').style.display='none';
+  const cfg=loadCfg();
+  document.getElementById('show-pass').textContent=cfg.passScore;
+  document.getElementById('show-time').textContent=cfg.timeLimit>0?cfg.timeLimit+'分':'無限制';
+  show('start-screen');
+}
+
+// ════════════════════════════════
+// 後台
+// ════════════════════════════════
+function goAdmin(){show('admin-login');}
+
+function checkAdmin(){
+  const pw=document.getElementById('admin-pw').value;
+  if(pw===loadCfg().adminPw){
+    document.getElementById('pw-err').style.display='none';
+    document.getElementById('admin-pw').value='';
+    sessionStorage.setItem(ADM_KEY,'1');
+    loadAdmin();
+    show('admin-screen');
+  }else{
+    document.getElementById('pw-err').style.display='block';
+  }
+}
+
+function adminLogout(){sessionStorage.removeItem(ADM_KEY);backHome();}
+
+function loadAdmin(){
+  const cfg=loadCfg();
+  document.getElementById('cfg-pass').value=cfg.passScore;
+  document.getElementById('cfg-attempts').value=cfg.maxAttempts;
+  document.getElementById('cfg-time').value=cfg.timeLimit;
+
+  const recs=loadRec();
+  // 統計
+  const total=recs.length;
+  const people=new Set(recs.map(r=>r.email)).size;
+  const passing=recs.filter(r=>r.score>=cfg.passScore).length;
+  const avg=total>0?Math.round(recs.reduce((s,r)=>s+r.score,0)/total):'-';
+  document.getElementById('sum-total').textContent=total;
+  document.getElementById('sum-people').textContent=people;
+  document.getElementById('sum-pass').textContent=passing;
+  document.getElementById('sum-avg').textContent=avg;
+
+  // 明細
+  const byEmail={};
+  recs.forEach(r=>{if(!byEmail[r.email])byEmail[r.email]=[];byEmail[r.email].push(r);});
+  const stb=document.getElementById('summary-tbody');
+  stb.innerHTML=Object.keys(byEmail).length===0
+    ?'<tr><td colspan="7" class="empty-msg">尚無記錄</td></tr>'
+    :Object.entries(byEmail).map(([em,rs])=>{
+      const last=rs[rs.length-1];
+      const maxS=Math.max(...rs.map(r=>r.score));
+      const minS=Math.min(...rs.map(r=>r.score));
+      const pass=last.score>=cfg.passScore;
+      return `<tr><td>${em}</td><td>${rs.length}</td><td>${last.time}</td>
+        <td style="color:var(--correct)">${maxS}</td>
+        <td style="color:var(--wrong)">${minS}</td>
+        <td style="font-weight:700">${last.score}</td>
+        <td><span class="${pass?'pass-y':'pass-n'}">${pass?'✅ 通過':'❌ 未通過'}</span></td></tr>`;
+    }).join('');
+
+  // 完整記錄
+  const atb=document.getElementById('all-tbody');
+  atb.innerHTML=recs.length===0
+    ?'<tr><td colspan="6" class="empty-msg">尚無記錄</td></tr>'
+    :[...recs].reverse().map(r=>{
+      const pass=r.score>=cfg.passScore;
+      const m=Math.floor(r.elapsed/60),s=String(r.elapsed%60).padStart(2,'0');
+      return `<tr><td>${r.email}</td><td>${r.time}</td>
+        <td style="font-weight:700">${r.score}</td>
+        <td>${r.correct}/25</td><td>${m}:${s}</td>
+        <td><span class="${pass?'pass-y':'pass-n'}">${pass?'✅ 通過':'❌ 未通過'}</span></td></tr>`;
+    }).join('');
+}
+
+function saveConfig(){
+  const cfg=loadCfg();
+  cfg.passScore=parseInt(document.getElementById('cfg-pass').value)||80;
+  cfg.maxAttempts=parseInt(document.getElementById('cfg-attempts').value)||0;
+  cfg.timeLimit=parseInt(document.getElementById('cfg-time').value)||0;
+  const np=document.getElementById('cfg-pw').value.trim();
+  if(np)cfg.adminPw=np;
+  saveCfg(cfg);
+  document.getElementById('cfg-pw').value='';
+  const ok=document.getElementById('save-ok');
+  ok.style.display='inline';
+  setTimeout(()=>ok.style.display='none',2500);
+  loadAdmin();
+}
+
+function exportCSV(){
+  const recs=loadRec();
+  if(!recs.length){alert('尚無資料可匯出');return;}
+  const hdr='Email,測驗時間,分數,是否通過,答對題數,總題數,耗時(秒)\n';
+  const rows=recs.map(r=>`${r.email},"${r.time}",${r.score},${r.pass?'通過':'未通過'},${r.correct},${r.total},${r.elapsed}`).join('\n');
+  const blob=new Blob(['\uFEFF'+hdr+rows],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Mustela測驗記錄_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
+  a.click();
+}
+
+// ════════════════════════════════
+// 初始化
+// ════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  const cfg=loadCfg();
+  document.getElementById('show-pass').textContent=cfg.passScore;
+  document.getElementById('show-time').textContent=cfg.timeLimit>0?cfg.timeLimit+'分':'無限制';
+});
+</script>
+</body>
+</html>
